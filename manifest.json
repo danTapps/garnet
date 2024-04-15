@@ -1,0 +1,19 @@
+{
+  "domain": "garnet",
+  "name": "Seelevel BT",
+  "bluetooth": [
+    {
+      "manufacturer_id": 305
+    }
+  ],
+  "codeowners": [
+    "@dan.ter"
+  ],
+  "config_flow": true,
+  "dependencies": ["bluetooth_adapters"],
+  "documentation": "https://www.home-assistant.io/integrations/easyair",
+  "iot_class": "local_push",
+  "integration_type": "device",
+  "loggers": ["bleak","garnet"],
+  "version": "0.0.1"
+}
