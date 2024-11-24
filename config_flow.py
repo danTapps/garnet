@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from typing import Any
 
-from .parser import GarnetBluetoothDeviceData as DeviceData
 import voluptuous as vol
 
 from homeassistant.components.bluetooth import (
@@ -15,6 +14,7 @@ from homeassistant.const import CONF_ADDRESS
 from homeassistant.data_entry_flow import FlowResult
 
 from .const import DOMAIN
+from .parser import GarnetBluetoothDeviceData as DeviceData
 
 
 class GarnetConfigFlow(ConfigFlow, domain=DOMAIN):

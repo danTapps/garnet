@@ -1,13 +1,16 @@
-from homeassistant.const import Platform
+"""Const definitions."""
+from enum import StrEnum
 
+from homeassistant.const import Platform
 
 DOMAIN = "garnet"
 
 PLATFORMS = [Platform.SENSOR]
-from enum import StrEnum
 
 
 class GarnetTypes(StrEnum):
+    """Garnet value types."""
+
     FRESH_TANK="fresh_tank"
     BLACK_TANK="black_tank"
     GREY_TANK="grey_tank"

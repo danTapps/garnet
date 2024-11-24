@@ -1,12 +1,9 @@
 """Support for Garnet sensors."""
 from __future__ import annotations
 
-from .parser import (
-    SensorDeviceClass as GarnetSensorDeviceClass,
-    SensorUpdate,
-    Units,
-)
+import logging
 
+from sensor_state_data import SensorUpdate
 
 from homeassistant import config_entries
 from homeassistant.components.bluetooth.passive_update_processor import (
@@ -21,10 +18,7 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.const import (
-    EntityCategory,
-    UnitOfVolume,
-)
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.sensor import sensor_device_info_to_hass_device_info
@@ -32,10 +26,7 @@ from homeassistant.helpers.sensor import sensor_device_info_to_hass_device_info
 from .const import DOMAIN, GarnetTypes
 from .device import device_key_to_bluetooth_entity_key
 
-import logging
 _LOGGER = logging.getLogger(__name__)
-
-
 
 SENSOR_DESCRIPTIONS = {
     GarnetTypes.FRESH_TANK: SensorEntityDescription(
@@ -64,7 +55,7 @@ SENSOR_DESCRIPTIONS = {
         native_unit_of_measurement="V",
     ),
     "signal_strength": SensorEntityDescription(
-        key=f"signal_strength_dBm",
+        key="signal_strength_dBm",
         device_class="signal_strength",
         native_unit_of_measurement="dBm",
         state_class=SensorStateClass.MEASUREMENT,
@@ -121,8 +112,8 @@ SENSOR_DESCRIPTIONS = {
 def sensor_update_to_bluetooth_data_update(
     sensor_update: SensorUpdate,
 ) -> PassiveBluetoothDataUpdate:
-    _LOGGER.debug(sensor_update)
     """Convert a sensor update to a bluetooth data update."""
+    _LOGGER.debug(sensor_update)
     return PassiveBluetoothDataUpdate(
         devices={
             device_id: sensor_device_info_to_hass_device_info(device_info)

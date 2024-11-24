@@ -1,25 +1,13 @@
+"""Garnet parser."""
 from __future__ import annotations
-
-from sensor_state_data import (
-    BinarySensorDeviceClass,
-    BinarySensorValue,
-    DeviceKey,
-    SensorDescription,
-    SensorDeviceClass,
-    SensorDeviceInfo,
-    SensorUpdate,
-    SensorValue,
-    Units,
-)
-
 
 import logging
 from struct import unpack
 
 from bluetooth_data_tools import short_address
-from bluetooth_sensor_state_data import BluetoothData
+from bluetooth_sensor_state_data import BluetoothData  # type: ignore  # noqa: PGH003
 from home_assistant_bluetooth import BluetoothServiceInfo
-from sensor_state_data import SensorLibrary
+
 from .const import GarnetTypes
 
 _LOGGER = logging.getLogger(__name__)
@@ -29,6 +17,14 @@ MFR_ID = 305
 
 class GarnetBluetoothDeviceData(BluetoothData):
     """Date update for Garnet Bluetooth devices."""
+
+    def __init__(self) -> None:
+        """Init members."""
+
+        self.address:str = None
+        self.manufacturer = "Garnet"
+        self.model = "709-BT"
+        self.device_id = None
 
     def _start_update(self, service_info: BluetoothServiceInfo) -> None:
         """Update from BLE advertisement data."""
@@ -42,9 +38,6 @@ class GarnetBluetoothDeviceData(BluetoothData):
             return
 
         self.address = service_info.address
-        self.manufacturer = "Garnet"
-        self.model = "709-BT"
-        self.device_id = None
 
         self.set_title(
             f"{self.manufacturer} {self.model} {short_address(self.address)}"
@@ -76,59 +69,58 @@ class GarnetBluetoothDeviceData(BluetoothData):
     def _get_sensor_name(self, sensor_type):
         if sensor_type == 0:
             return GarnetTypes.FRESH_TANK
-        elif sensor_type == 1:
+        if sensor_type == 1:
             return GarnetTypes.BLACK_TANK
-        elif sensor_type == 2:
+        if sensor_type == 2:
             return GarnetTypes.GREY_TANK
-        elif sensor_type == 3:
+        if sensor_type == 3:
             return GarnetTypes.LPG_TANK
-        elif sensor_type == 4:
+        if sensor_type == 4:
             return GarnetTypes.LPG_2_TANK
-        elif sensor_type == 5:
+        if sensor_type == 5:
             return GarnetTypes.GALLEY_TANK
-        elif sensor_type == 6:
+        if sensor_type == 6:
             return GarnetTypes.GALLEY_2_TANK
-        elif sensor_type == 7:
+        if sensor_type == 7:
             return GarnetTypes.TEMP
-        elif sensor_type == 8:
+        if sensor_type == 8:
             return GarnetTypes.TEMP_2
-        elif sensor_type == 9:
+        if sensor_type == 9:
             return GarnetTypes.TEMP_3
-        elif sensor_type == 10:
+        if sensor_type == 10:
             return GarnetTypes.TEMP_4
-        elif sensor_type == 11:
+        if sensor_type == 11:
             return GarnetTypes.CHEMICAL_TANK
-        elif sensor_type == 12:
+        if sensor_type == 12:
             return GarnetTypes.CHEMICAL_2_TANK
-        elif sensor_type == 13:
+        if sensor_type == 13:
             return GarnetTypes.BATTERY
-        else:
-            return "unknown_{}".format(sensor_type)
+
+        return f"unknown_{sensor_type}"
 
     def _process_update(self, data: bytes) -> None:
         """Update from BLE advertisement data."""
-        connected = True
-        _LOGGER.debug("Got data {} len {}".format(data, len(data)))
+        _LOGGER.debug("Got data %s len %d", format(data), len(data))
         (coach_id, sensor_type, sensor_value, sensor_volume, sensor_total, alarm) = unpack("@3sc3s3s3sc", data)
 
         coach_id = int.from_bytes(coach_id, byteorder='little')
         sensor_type = int.from_bytes(sensor_type, byteorder='little')
         sensor_value = sensor_value.decode("utf-8")
-        sensor_measurement_unit="%" 
+        sensor_measurement_unit="%"
         sensor_available=True
-        
-        _LOGGER.debug("Got coach_id {} sensor_type {} sensor_value {}".format(coach_id, sensor_type, sensor_value))
+
+        _LOGGER.debug("Got coach_id %d sensor_type %d sensor_value %s", coach_id, sensor_type, format(sensor_value))
         if sensor_type == 255:
             _LOGGER.debug("System booting up, skip update")
             return
-        if sensor_value == 'OPN' or sensor_value == 'NBO':
-            _LOGGER.info('Sensor {} is {}, no update'.format(self._get_sensor_name(sensor_type), sensor_value))
+        if sensor_value in ("OPN", "NBO"):
+            _LOGGER.info('Sensor %s is %s, no update', self._get_sensor_name(sensor_type), format(sensor_value))
             sensor_available=False
 #            return
-        if sensor_available == True:
+        if sensor_available is True:
             try:
                 sensor_value=int(sensor_value)
-            except Exception as e:
+            except Exception:  # noqa: BLE001
                 sensor_available=False
         sensor_device_class=None
         if sensor_type == 13:
@@ -142,7 +134,7 @@ class GarnetBluetoothDeviceData(BluetoothData):
         self.update_sensor(
             key=self._get_sensor_name(sensor_type),
             native_unit_of_measurement=sensor_measurement_unit,
-            native_value=sensor_value if sensor_available == True else None,
+            native_value=sensor_value if sensor_available is True else None,
             device_class=sensor_device_class,
         )
 #        else:
