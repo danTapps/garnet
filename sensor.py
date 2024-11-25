@@ -1,9 +1,9 @@
 """Support for Garnet sensors."""
+
 from __future__ import annotations
 
-from typing import Any, Dict, Optional, Tuple, Union
-
 import logging
+from typing import Optional
 
 from homeassistant import config_entries
 from homeassistant.components.bluetooth.passive_update_processor import (
@@ -109,9 +109,8 @@ SENSOR_DESCRIPTIONS = {
     ),
 }
 
-def sensor_update_to_bluetooth_data_update(
-    sensor_update
-) -> PassiveBluetoothDataUpdate:
+
+def sensor_update_to_bluetooth_data_update(sensor_update) -> PassiveBluetoothDataUpdate:
     """Convert a sensor update to a bluetooth data update."""
     _LOGGER.debug(sensor_update)
     return PassiveBluetoothDataUpdate(
@@ -156,7 +155,7 @@ async def async_setup_entry(
 
 class GarnetBluetoothSensorEntity(
     PassiveBluetoothProcessorEntity[
-        PassiveBluetoothDataProcessor[Optional[Union[float, int]], 1]
+        PassiveBluetoothDataProcessor[Optional[float | int], 1]  # noqa: UP007
     ],
     SensorEntity,
 ):
