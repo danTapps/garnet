@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import logging
 
-from sensor_state_data import DeviceKey
+from sensor_state_data import DeviceKey  # type: ignore  # noqa: PGH003
 
 from homeassistant.components.bluetooth.passive_update_processor import (
     PassiveBluetoothEntityKey,
