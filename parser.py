@@ -1,4 +1,5 @@
 """Garnet parser."""
+
 from __future__ import annotations
 
 import logging
@@ -21,7 +22,7 @@ class GarnetBluetoothDeviceData(BluetoothData):
     def __init__(self) -> None:
         """Init members."""
 
-        self.address:str = None
+        self.address: str = None
         self.manufacturer = "Garnet"
         self.model = "709-BT"
         self.device_id = None
@@ -50,21 +51,20 @@ class GarnetBluetoothDeviceData(BluetoothData):
 
         self._process_update(data)
 
-
-# 0 = Fresh
-# 1 = Black
-# 2 = Gray
-# 3 = LPG
-# 4 = LPG 2
-# 5 = Galley
-# 6 = Galley 2
-# 7 = Temp
-# 8 = Temp 2
-# 9 = Temp 3
-# 10 = Temp 4
-# 11 = Chemical
-# 12 = Chemical 2
-# 13 = Battery x 10
+    # 0 = Fresh
+    # 1 = Black
+    # 2 = Gray
+    # 3 = LPG
+    # 4 = LPG 2
+    # 5 = Galley
+    # 6 = Galley 2
+    # 7 = Temp
+    # 8 = Temp 2
+    # 9 = Temp 3
+    # 10 = Temp 4
+    # 11 = Chemical
+    # 12 = Chemical 2
+    # 13 = Battery x 10
 
     def _get_sensor_name(self, sensor_type):
         if sensor_type == 0:
@@ -101,35 +101,46 @@ class GarnetBluetoothDeviceData(BluetoothData):
     def _process_update(self, data: bytes) -> None:
         """Update from BLE advertisement data."""
         _LOGGER.debug("Got data %s len %d", format(data), len(data))
-        (coach_id, sensor_type, sensor_value, sensor_volume, sensor_total, alarm) = unpack("@3sc3s3s3sc", data)
+        (coach_id, sensor_type, sensor_value, sensor_volume, sensor_total, alarm) = (
+            unpack("@3sc3s3s3sc", data)
+        )
 
-        coach_id = int.from_bytes(coach_id, byteorder='little')
-        sensor_type = int.from_bytes(sensor_type, byteorder='little')
+        coach_id = int.from_bytes(coach_id, byteorder="little")
+        sensor_type = int.from_bytes(sensor_type, byteorder="little")
         sensor_value = sensor_value.decode("utf-8")
-        sensor_measurement_unit="%"
-        sensor_available=True
+        sensor_measurement_unit = "%"
+        sensor_available = True
 
-        _LOGGER.debug("Got coach_id %d sensor_type %d sensor_value %s", coach_id, sensor_type, format(sensor_value))
+        _LOGGER.debug(
+            "Got coach_id %d sensor_type %d sensor_value %s",
+            coach_id,
+            sensor_type,
+            format(sensor_value),
+        )
         if sensor_type == 255:
             _LOGGER.debug("System booting up, skip update")
             return
         if sensor_value in ("OPN", "NBO"):
-            _LOGGER.info('Sensor %s is %s, no update', self._get_sensor_name(sensor_type), format(sensor_value))
-            sensor_available=False
-#            return
+            _LOGGER.info(
+                "Sensor %s is %s, no update",
+                self._get_sensor_name(sensor_type),
+                format(sensor_value),
+            )
+            sensor_available = False
+        #            return
         if sensor_available is True:
             try:
-                sensor_value=int(sensor_value)
+                sensor_value = int(sensor_value)
             except Exception:  # noqa: BLE001
-                sensor_available=False
-        sensor_device_class=None
+                sensor_available = False
+        sensor_device_class = None
         if sensor_type == 13:
-            sensor_value = round(sensor_value/10,2)
+            sensor_value = round(sensor_value / 10, 2)
             sensor_measurement_unit = "V"
-            sensor_device_class="VOLTAGE"
+            sensor_device_class = "VOLTAGE"
         if sensor_type >= 7 and sensor_type <= 10:
             sensor_measurement_unit = "DEGREE"
-            sensor_device_class="TEMPERATURE"
+            sensor_device_class = "TEMPERATURE"
 
         self.update_sensor(
             key=self._get_sensor_name(sensor_type),
@@ -137,6 +148,8 @@ class GarnetBluetoothDeviceData(BluetoothData):
             native_value=sensor_value if sensor_available is True else None,
             device_class=sensor_device_class,
         )
+
+
 #        else:
 #            self.update_sensor(
 #                key=self._get_sensor_name(sensor_type),
