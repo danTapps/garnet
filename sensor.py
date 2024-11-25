@@ -3,8 +3,6 @@ from __future__ import annotations
 
 import logging
 
-from sensor_state_data import SensorUpdate
-
 from homeassistant import config_entries
 from homeassistant.components.bluetooth.passive_update_processor import (
     PassiveBluetoothDataProcessor,
@@ -110,7 +108,7 @@ SENSOR_DESCRIPTIONS = {
 }
 
 def sensor_update_to_bluetooth_data_update(
-    sensor_update: SensorUpdate,
+    sensor_update
 ) -> PassiveBluetoothDataUpdate:
     """Convert a sensor update to a bluetooth data update."""
     _LOGGER.debug(sensor_update)
