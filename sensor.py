@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Optional
+from typing import Optional, Union
 
 from homeassistant import config_entries
 from homeassistant.components.bluetooth.passive_update_processor import (
@@ -155,7 +155,7 @@ async def async_setup_entry(
 
 class GarnetBluetoothSensorEntity(
     PassiveBluetoothProcessorEntity[
-        PassiveBluetoothDataProcessor[Optional[float | int], 1]  # noqa: UP007
+        PassiveBluetoothDataProcessor[Optional[Union[float, int]], 1]
     ],
     SensorEntity,
 ):
