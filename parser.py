@@ -26,6 +26,7 @@ class GarnetBluetoothDeviceData(BluetoothData):
         self.manufacturer = "Garnet"
         self.model = "709-BT"
         self.device_id = None
+        super().__init__()
 
     def _start_update(self, service_info: BluetoothServiceInfo) -> None:
         """Update from BLE advertisement data."""
