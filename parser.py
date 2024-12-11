@@ -28,18 +28,18 @@ class GarnetBluetoothDeviceData(BluetoothData):
         self.device_id = None
         super().__init__()
 
-    def _start_update(self, service_info: BluetoothServiceInfo) -> None:
+    def _start_update(self, data: BluetoothServiceInfo) -> None:
         """Update from BLE advertisement data."""
-        _LOGGER.debug("Parsing Garnet BLE advertisement data: %s", service_info)
-        if MFR_ID not in service_info.manufacturer_data:
+        _LOGGER.debug("Parsing Garnet BLE advertisement data: %s", data)
+        if MFR_ID not in data.manufacturer_data:
             return
-        manufacturer_data = service_info.manufacturer_data
+        manufacturer_data = data.manufacturer_data
         data = manufacturer_data[MFR_ID]
         msg_length = len(data)
         if msg_length != 14:
             return
 
-        self.address = service_info.address
+        self.address = data.address
 
         self.set_title(
             f"{self.manufacturer} {self.model} {short_address(self.address)}"
