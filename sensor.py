@@ -134,7 +134,6 @@ def sensor_update_to_bluetooth_data_update(sensor_update) -> PassiveBluetoothDat
         },
     )
 
-
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: config_entries.ConfigEntry,
@@ -155,7 +154,7 @@ async def async_setup_entry(
 
 class GarnetBluetoothSensorEntity(
     PassiveBluetoothProcessorEntity[
-        PassiveBluetoothDataProcessor[Optional[Union[float, int]], 1]
+        PassiveBluetoothDataProcessor[Optional[Union[float, int]], 1]  # noqa: UP007
     ],
     SensorEntity,
 ):

@@ -128,12 +128,13 @@ class GarnetBluetoothDeviceData(BluetoothData):
                 format(sensor_value),
             )
             sensor_available = False
-        #            return
+
         if sensor_available is True:
             try:
                 sensor_value = int(sensor_value)
             except Exception:  # noqa: BLE001
                 sensor_available = False
+
         sensor_device_class = None
         if sensor_type == 13:
             sensor_value = round(sensor_value / 10, 2)
@@ -149,12 +150,3 @@ class GarnetBluetoothDeviceData(BluetoothData):
             native_value=sensor_value if sensor_available is True else None,
             device_class=sensor_device_class,
         )
-
-
-#        else:
-#            self.update_sensor(
-#                key=self._get_sensor_name(sensor_type),
-#                native_unit_of_measurement=sensor_measurement_unit,
-#                device_class=sensor_device_class,
-#                available=sensor_available,
-#            )
