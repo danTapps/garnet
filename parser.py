@@ -140,7 +140,7 @@ class GarnetBluetoothDeviceData(BluetoothData):
             sensor_value = round(sensor_value / 10, 2)
             sensor_measurement_unit = "V"
             sensor_device_class = "VOLTAGE"
-        if sensor_type >= 7 and sensor_type <= 10:
+        if 6 < sensor_type < 11:
             sensor_measurement_unit = "DEGREE"
             sensor_device_class = "TEMPERATURE"
 
