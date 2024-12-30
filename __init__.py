@@ -1,4 +1,4 @@
-"""The Chef iQ integration."""
+"""The Garnet integration."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN
-from .parser import ChefIqBluetoothDeviceData
+from .parser import GarnetBluetoothDeviceData
 
 PLATFORMS: list[Platform] = [Platform.SENSOR]
 
@@ -21,10 +21,10 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up Chef iQ BLE device from a config entry."""
+    """Set up Garnet BLE device from a config entry."""
     address = entry.unique_id
     assert address is not None
-    data = ChefIqBluetoothDeviceData()
+    data = GarnetBluetoothDeviceData()
     coordinator = hass.data.setdefault(DOMAIN, {})[entry.entry_id] = (
         PassiveBluetoothProcessorCoordinator(
             hass,

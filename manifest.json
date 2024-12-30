@@ -1,9 +1,9 @@
 {
-  "domain": "chefiq",
-  "name": "Chef iQ",
+  "domain": "garnet",
+  "name": "Garnet 709-BT",
   "bluetooth": [
     {
-      "manufacturer_id": 1485
+      "manufacturer_id": 305
     }
   ],
   "codeowners": [
@@ -11,10 +11,9 @@
   ],
   "config_flow": true,
   "dependencies": ["bluetooth_adapters"],
-  "documentation": "https://github.com/danTapps/chefiq",
+  "documentation": "https://github.com/danTapps/garnet",
   "iot_class": "local_push",
   "integration_type": "device",
-  "loggers": ["bleak","chefiq"],
-  "requirements": ["bluetooth_sensor_state_data"],
+  "loggers": ["bleak","garnet"],
   "version": "1.0.0"
 }

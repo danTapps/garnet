@@ -1,4 +1,4 @@
-"""Support for Chef iQ sensors."""
+"""Support for Garnet sensors."""
 
 from __future__ import annotations
 
@@ -18,59 +18,41 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.const import PERCENTAGE, EntityCategory, UnitOfTemperature
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.sensor import sensor_device_info_to_hass_device_info
 
-from .const import DOMAIN, ChefIqTypes
+from .const import DOMAIN, GarnetTypes
 from .device import device_key_to_bluetooth_entity_key
 
 _LOGGER = logging.getLogger(__name__)
 
 SENSOR_DESCRIPTIONS = {
-    ChefIqTypes.BATTERY: SensorEntityDescription(
-        key=ChefIqTypes.BATTERY,
-        device_class=SensorDeviceClass.BATTERY,
-        native_unit_of_measurement=PERCENTAGE,
-        state_class=SensorStateClass.MEASUREMENT,
-        entity_category=EntityCategory.DIAGNOSTIC,
+    GarnetTypes.FRESH_TANK: SensorEntityDescription(
+        key=GarnetTypes.FRESH_TANK,
+        device_class=None,
+        native_unit_of_measurement="%",
     ),
-    ChefIqTypes.TEMP_MEAT: SensorEntityDescription(
-        key=ChefIqTypes.TEMP_MEAT,
-        device_class=SensorDeviceClass.TEMPERATURE,
-        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        state_class=SensorStateClass.MEASUREMENT,
+    GarnetTypes.BLACK_TANK: SensorEntityDescription(
+        key=GarnetTypes.BLACK_TANK,
+        device_class=None,
+        native_unit_of_measurement="%",
     ),
-    ChefIqTypes.TEMP_TIP: SensorEntityDescription(
-        key=ChefIqTypes.TEMP_TIP,
-        device_class=SensorDeviceClass.TEMPERATURE,
-        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        state_class=SensorStateClass.MEASUREMENT,
+    GarnetTypes.GREY_TANK: SensorEntityDescription(
+        key=GarnetTypes.GREY_TANK,
+        device_class=None,
+        native_unit_of_measurement="%",
     ),
-    ChefIqTypes.TEMP_1: SensorEntityDescription(
-        key=ChefIqTypes.TEMP_1,
-        device_class=SensorDeviceClass.TEMPERATURE,
-        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        state_class=SensorStateClass.MEASUREMENT,
+    GarnetTypes.LPG_TANK: SensorEntityDescription(
+        key=GarnetTypes.LPG_TANK,
+        device_class=None,
+        native_unit_of_measurement="%",
     ),
-    ChefIqTypes.TEMP_2: SensorEntityDescription(
-        key=ChefIqTypes.TEMP_2,
-        device_class=SensorDeviceClass.TEMPERATURE,
-        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        state_class=SensorStateClass.MEASUREMENT,
-    ),
-    ChefIqTypes.TEMP_3: SensorEntityDescription(
-        key=ChefIqTypes.TEMP_3,
-        device_class=SensorDeviceClass.TEMPERATURE,
-        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        state_class=SensorStateClass.MEASUREMENT,
-    ),
-    ChefIqTypes.TEMP_AMBIENT: SensorEntityDescription(
-        key=ChefIqTypes.TEMP_AMBIENT,
-        device_class=SensorDeviceClass.TEMPERATURE,
-        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        state_class=SensorStateClass.MEASUREMENT,
+    GarnetTypes.BATTERY: SensorEntityDescription(
+        key=GarnetTypes.BATTERY,
+        device_class=SensorDeviceClass.VOLTAGE,
+        native_unit_of_measurement="V",
     ),
     "signal_strength": SensorEntityDescription(
         key="signal_strength_dBm",
@@ -80,12 +62,57 @@ SENSOR_DESCRIPTIONS = {
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
     ),
+    GarnetTypes.LPG_2_TANK: SensorEntityDescription(
+        key=GarnetTypes.LPG_2_TANK,
+        device_class=None,
+        native_unit_of_measurement="%",
+    ),
+    GarnetTypes.GALLEY_TANK: SensorEntityDescription(
+        key=GarnetTypes.GALLEY_TANK,
+        device_class=None,
+        native_unit_of_measurement="%",
+    ),
+    GarnetTypes.GALLEY_2_TANK: SensorEntityDescription(
+        key=GarnetTypes.GALLEY_2_TANK,
+        device_class=None,
+        native_unit_of_measurement="%",
+    ),
+    GarnetTypes.TEMP: SensorEntityDescription(
+        key=GarnetTypes.TEMP,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="",
+    ),
+    GarnetTypes.TEMP_2: SensorEntityDescription(
+        key=GarnetTypes.TEMP_2,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="",
+    ),
+    GarnetTypes.TEMP_3: SensorEntityDescription(
+        key=GarnetTypes.TEMP_3,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="",
+    ),
+    GarnetTypes.TEMP_4: SensorEntityDescription(
+        key=GarnetTypes.TEMP_4,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="",
+    ),
+    GarnetTypes.CHEMICAL_TANK: SensorEntityDescription(
+        key=GarnetTypes.CHEMICAL_TANK,
+        device_class=None,
+        native_unit_of_measurement="%",
+    ),
+    GarnetTypes.CHEMICAL_2_TANK: SensorEntityDescription(
+        key=GarnetTypes.CHEMICAL_2_TANK,
+        device_class=None,
+        native_unit_of_measurement="%",
+    ),
 }
 
 
 def sensor_update_to_bluetooth_data_update(sensor_update) -> PassiveBluetoothDataUpdate:
     """Convert a sensor update to a bluetooth data update."""
-
+    _LOGGER.debug(sensor_update)
     return PassiveBluetoothDataUpdate(
         devices={
             device_id: sensor_device_info_to_hass_device_info(device_info)
@@ -107,32 +134,31 @@ def sensor_update_to_bluetooth_data_update(sensor_update) -> PassiveBluetoothDat
         },
     )
 
-
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: config_entries.ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up the Chef iQ BLE sensors."""
+    """Set up the Garnet BLE sensors."""
     coordinator: PassiveBluetoothProcessorCoordinator = hass.data[DOMAIN][
         entry.entry_id
     ]
     processor = PassiveBluetoothDataProcessor(sensor_update_to_bluetooth_data_update)
     entry.async_on_unload(
         processor.async_add_entities_listener(
-            ChefIqBluetoothSensorEntity, async_add_entities
+            GarnetBluetoothSensorEntity, async_add_entities
         )
     )
     entry.async_on_unload(coordinator.async_register_processor(processor))
 
 
-class ChefIqBluetoothSensorEntity(
+class GarnetBluetoothSensorEntity(
     PassiveBluetoothProcessorEntity[
         PassiveBluetoothDataProcessor[Optional[Union[float, int]], 1]  # noqa: UP007
     ],
     SensorEntity,
 ):
-    """Representation of a Chef iQ sensor."""
+    """Representation of a Garnet sensor."""
 
     @property
     def native_value(self) -> int | float | None:
