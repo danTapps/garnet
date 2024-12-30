@@ -134,6 +134,7 @@ def sensor_update_to_bluetooth_data_update(sensor_update) -> PassiveBluetoothDat
         },
     )
 
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: config_entries.ConfigEntry,
