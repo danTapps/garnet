@@ -12,13 +12,8 @@ from homeassistant.components.bluetooth.passive_update_processor import (
     PassiveBluetoothProcessorCoordinator,
     PassiveBluetoothProcessorEntity,
 )
-from homeassistant.components.sensor import (
-    SensorDeviceClass,
-    SensorEntity,
-    SensorEntityDescription,
-    SensorStateClass,
-)
-from homeassistant.const import PERCENTAGE, EntityCategory, UnitOfTemperature
+from homeassistant.components.text import TextEntity, TextEntityDescription
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.sensor import sensor_device_info_to_hass_device_info
@@ -28,57 +23,10 @@ from .device import device_key_to_bluetooth_entity_key
 
 _LOGGER = logging.getLogger(__name__)
 
-SENSOR_DESCRIPTIONS = {
-    ChefIqTypes.BATTERY: SensorEntityDescription(
-        key=ChefIqTypes.BATTERY,
-        device_class=SensorDeviceClass.BATTERY,
-        native_unit_of_measurement=PERCENTAGE,
-        state_class=SensorStateClass.MEASUREMENT,
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    ChefIqTypes.TEMP_MEAT: SensorEntityDescription(
-        key=ChefIqTypes.TEMP_MEAT,
-        device_class=SensorDeviceClass.TEMPERATURE,
-        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        state_class=SensorStateClass.MEASUREMENT,
-    ),
-    ChefIqTypes.TEMP_TIP: SensorEntityDescription(
-        key=ChefIqTypes.TEMP_TIP,
-        device_class=SensorDeviceClass.TEMPERATURE,
-        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        state_class=SensorStateClass.MEASUREMENT,
-    ),
-    ChefIqTypes.TEMP_1: SensorEntityDescription(
-        key=ChefIqTypes.TEMP_1,
-        device_class=SensorDeviceClass.TEMPERATURE,
-        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        state_class=SensorStateClass.MEASUREMENT,
-    ),
-    ChefIqTypes.TEMP_2: SensorEntityDescription(
-        key=ChefIqTypes.TEMP_2,
-        device_class=SensorDeviceClass.TEMPERATURE,
-        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        state_class=SensorStateClass.MEASUREMENT,
-    ),
-    ChefIqTypes.TEMP_3: SensorEntityDescription(
-        key=ChefIqTypes.TEMP_3,
-        device_class=SensorDeviceClass.TEMPERATURE,
-        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        state_class=SensorStateClass.MEASUREMENT,
-    ),
-    ChefIqTypes.TEMP_AMBIENT: SensorEntityDescription(
-        key=ChefIqTypes.TEMP_AMBIENT,
-        device_class=SensorDeviceClass.TEMPERATURE,
-        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        state_class=SensorStateClass.MEASUREMENT,
-    ),
-    "signal_strength": SensorEntityDescription(
-        key="signal_strength_dBm",
-        device_class="signal_strength",
-        native_unit_of_measurement="dBm",
-        state_class=SensorStateClass.MEASUREMENT,
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
+TEXT_DESCRIPTIONS = {
+    ChefIqTypes.NAME: TextEntityDescription(
+        key=ChefIqTypes.NAME,
+        entity_category=EntityCategory.CONFIG,
     ),
 }
 
@@ -92,7 +40,7 @@ def sensor_update_to_bluetooth_data_update(sensor_update) -> PassiveBluetoothDat
             for device_id, device_info in sensor_update.devices.items()
         },
         entity_descriptions={
-            device_key_to_bluetooth_entity_key(device_key): SENSOR_DESCRIPTIONS[
+            device_key_to_bluetooth_entity_key(device_key): TEXT_DESCRIPTIONS[
                 description.device_key.key
             ]
             for device_key, description in sensor_update.entity_descriptions.items()
@@ -120,17 +68,17 @@ async def async_setup_entry(
     processor = PassiveBluetoothDataProcessor(sensor_update_to_bluetooth_data_update)
     entry.async_on_unload(
         processor.async_add_entities_listener(
-            ChefIqBluetoothSensorEntity, async_add_entities
+            ChefIqBluetoothTextEntity, async_add_entities
         )
     )
     entry.async_on_unload(coordinator.async_register_processor(processor))
 
 
-class ChefIqBluetoothSensorEntity(
+class ChefIqBluetoothTextEntity(
     PassiveBluetoothProcessorEntity[
         PassiveBluetoothDataProcessor[Optional[Union[float, int]], 1]  # noqa: UP007
     ],
-    SensorEntity,
+    TextEntity,
 ):
     """Representation of a Chef iQ sensor."""
 

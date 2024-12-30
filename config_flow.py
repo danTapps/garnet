@@ -1,4 +1,4 @@
-"""Config flow for Garnet ble integration."""
+"""Config flow for Chef iQ ble integration."""
 
 from __future__ import annotations
 
@@ -15,11 +15,11 @@ from homeassistant.const import CONF_ADDRESS
 from homeassistant.data_entry_flow import FlowResult
 
 from .const import DOMAIN
-from .parser import GarnetBluetoothDeviceData as DeviceData
+from .parser import ChefIqBluetoothDeviceData as DeviceData
 
 
-class GarnetConfigFlow(ConfigFlow, domain=DOMAIN):
-    """Handle a config flow for Garnet."""
+class ChefIqConfigFlow(ConfigFlow, domain=DOMAIN):
+    """Handle a config flow for Chef iQ."""
 
     VERSION = 1
 

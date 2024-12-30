@@ -1,4 +1,4 @@
-"""Support for Garnet devices."""
+"""Support for Chef iQ devices."""
 
 from __future__ import annotations
 

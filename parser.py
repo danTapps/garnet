@@ -1,4 +1,4 @@
-"""Garnet parser."""
+"""Chef iQ parser."""
 
 from __future__ import annotations
 
@@ -9,34 +9,56 @@ from bluetooth_data_tools import short_address
 from bluetooth_sensor_state_data import BluetoothData  # type: ignore  # noqa: PGH003
 from home_assistant_bluetooth import BluetoothServiceInfo
 
-from .const import GarnetTypes
+from homeassistant.const import UnitOfTemperature
+
+from .const import MFR_ID, ChefIqTypes
 
 _LOGGER = logging.getLogger(__name__)
 
-MFR_ID = 305
 
-
-class GarnetBluetoothDeviceData(BluetoothData):
-    """Date update for Garnet Bluetooth devices."""
+class ChefIqBluetoothDeviceData(BluetoothData):
+    """Date update for Chef iQ Bluetooth devices."""
 
     def __init__(self) -> None:
         """Init members."""
 
         self.address: str = None
-        self.manufacturer = "Garnet"
-        self.model = "709-BT"
+        self.manufacturer = "Chef iQ"
+        self.model = "CQ60"
         self.device_id = None
         super().__init__()
 
     def _start_update(self, data: BluetoothServiceInfo) -> None:
         """Update from BLE advertisement data."""
-        _LOGGER.debug("Parsing Garnet BLE advertisement data: %s", data)
+
+        # _LOGGER.debug(
+        #    "Parsing Chef iQ BLE advertisement MFR_ID %s",
+        #    "".join(f"0x{byte:02x} " for byte in data.manufacturer_data),
+        # )
+
         if MFR_ID not in data.manufacturer_data:
             return
         manufacturer_data = data.manufacturer_data
-        data = manufacturer_data[MFR_ID]
-        msg_length = len(data)
-        if msg_length != 14:
+        msg_data = manufacturer_data[MFR_ID]
+        msg_length = len(msg_data)
+
+        _LOGGER.debug(
+            "Parsing Chef iQ BLE advertisement data len: %d, data: %s",
+            msg_length,
+            "".join(f"0x{byte:02x} " for byte in msg_data),
+        )
+        _LOGGER.debug(msg_data)
+
+        if msg_length == 0:
+            return
+
+        msg_type = msg_data[0]
+
+        if not (
+            (msg_length == 18 and msg_type == 1)
+            or (msg_length == 16 and msg_type == 0)
+            or (msg_length == 17 and msg_type == 3)
+        ):
             return
 
         self.address = data.address
@@ -50,103 +72,115 @@ class GarnetBluetoothDeviceData(BluetoothData):
         self.set_device_type(self.model)
         self.set_device_manufacturer(self.manufacturer)
 
-        self._process_update(data)
-
-    # 0 = Fresh
-    # 1 = Black
-    # 2 = Gray
-    # 3 = LPG
-    # 4 = LPG 2
-    # 5 = Galley
-    # 6 = Galley 2
-    # 7 = Temp
-    # 8 = Temp 2
-    # 9 = Temp 3
-    # 10 = Temp 4
-    # 11 = Chemical
-    # 12 = Chemical 2
-    # 13 = Battery x 10
-
-    def _get_sensor_name(self, sensor_type):
-        if sensor_type == 0:
-            return GarnetTypes.FRESH_TANK
-        if sensor_type == 1:
-            return GarnetTypes.BLACK_TANK
-        if sensor_type == 2:
-            return GarnetTypes.GREY_TANK
-        if sensor_type == 3:
-            return GarnetTypes.LPG_TANK
-        if sensor_type == 4:
-            return GarnetTypes.LPG_2_TANK
-        if sensor_type == 5:
-            return GarnetTypes.GALLEY_TANK
-        if sensor_type == 6:
-            return GarnetTypes.GALLEY_2_TANK
-        if sensor_type == 7:
-            return GarnetTypes.TEMP
-        if sensor_type == 8:
-            return GarnetTypes.TEMP_2
-        if sensor_type == 9:
-            return GarnetTypes.TEMP_3
-        if sensor_type == 10:
-            return GarnetTypes.TEMP_4
-        if sensor_type == 11:
-            return GarnetTypes.CHEMICAL_TANK
-        if sensor_type == 12:
-            return GarnetTypes.CHEMICAL_2_TANK
-        if sensor_type == 13:
-            return GarnetTypes.BATTERY
-
-        return f"unknown_{sensor_type}"
+        if msg_type == 1:
+            self._process_update(msg_data)
+        #        elif msg_type == 0:
+        #            self._process_name(msg_data)
+        elif msg_type == 3:
+            self._process_status(msg_data)
 
     def _process_update(self, data: bytes) -> None:
         """Update from BLE advertisement data."""
-        _LOGGER.debug("Got data %s len %d", format(data), len(data))
-        (coach_id, sensor_type, sensor_value, sensor_volume, sensor_total, alarm) = (
-            unpack("@3sc3s3s3sc", data)
-        )
+        # _LOGGER.debug("Got data %s len %d", format(data), len(data))
 
-        coach_id = int.from_bytes(coach_id, byteorder="little")
-        sensor_type = int.from_bytes(sensor_type, byteorder="little")
-        sensor_value = sensor_value.decode("utf-8")
-        sensor_measurement_unit = "%"
-        sensor_available = True
+        (
+            msg_type,
+            _,
+            temp_probe_3,
+            temp_meat,
+            temp_tip,
+            temp_probe_1,
+            temp_probe_2,
+            _,
+            temp_ambient,
+            _,
+        ) = unpack("<BBHHHHHHHH", data)
 
-        _LOGGER.debug(
-            "Got coach_id %d sensor_type %d sensor_value %s",
-            coach_id,
-            sensor_type,
-            format(sensor_value),
-        )
-        if sensor_type == 255:
-            _LOGGER.debug("System booting up, skip update")
+        if msg_type != 1:
             return
-        if sensor_value in ("OPN", "NBO"):
-            _LOGGER.info(
-                "Sensor %s is %s, no update",
-                self._get_sensor_name(sensor_type),
-                format(sensor_value),
-            )
-            sensor_available = False
-
-        if sensor_available is True:
-            try:
-                sensor_value = int(sensor_value)
-            except Exception:  # noqa: BLE001
-                sensor_available = False
-
-        sensor_device_class = None
-        if sensor_type == 13:
-            sensor_value = round(sensor_value / 10, 2)
-            sensor_measurement_unit = "V"
-            sensor_device_class = "VOLTAGE"
-        if sensor_type >= 7 and sensor_type <= 10:
-            sensor_measurement_unit = "DEGREE"
-            sensor_device_class = "TEMPERATURE"
 
         self.update_sensor(
-            key=self._get_sensor_name(sensor_type),
-            native_unit_of_measurement=sensor_measurement_unit,
-            native_value=sensor_value if sensor_available is True else None,
-            device_class=sensor_device_class,
+            key=ChefIqTypes.TEMP_3,
+            native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+            native_value=temp_probe_3 / 10,
+            device_class="TEMPERATURE",
+        )
+
+        self.update_sensor(
+            key=ChefIqTypes.TEMP_MEAT,
+            native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+            native_value=temp_meat / 10,
+            device_class="TEMPERATURE",
+        )
+
+        self.update_sensor(
+            key=ChefIqTypes.TEMP_TIP,
+            native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+            native_value=temp_tip / 10,
+            device_class="TEMPERATURE",
+        )
+
+        self.update_sensor(
+            key=ChefIqTypes.TEMP_1,
+            native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+            native_value=temp_probe_1 / 10,
+            device_class="TEMPERATURE",
+        )
+
+        self.update_sensor(
+            key=ChefIqTypes.TEMP_2,
+            native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+            native_value=temp_probe_2 / 10,
+            device_class="TEMPERATURE",
+        )
+
+        self.update_sensor(
+            key=ChefIqTypes.TEMP_AMBIENT,
+            native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+            native_value=temp_ambient / 10,
+            device_class="TEMPERATURE",
+        )
+
+    def _process_name(self, data: bytes) -> None:
+        """Update from BLE advertisement data."""
+        # _LOGGER.debug("Got data %s len %d", format(data), len(data))
+
+        name: str = ""
+        (
+            msg_type,
+            _,
+            name,
+            _,
+        ) = unpack("<BB12sH", data)
+
+        _LOGGER.debug("Got name %s", name)
+
+    def _process_status(self, data: bytes) -> None:
+        """Update from BLE advertisement data."""
+        # _LOGGER.debug("Got data %s len %d", format(data), len(data))
+
+        (
+            msg_type,
+            _,
+            _,
+            _,
+            _,
+            _,
+            _,
+            _,
+            battery,
+            _,
+            _,
+            _,
+            _,
+            _,
+            _,
+            _,
+        ) = unpack("<BBBBBBBBBBBBBBBH", data)
+
+        self.update_sensor(
+            key=ChefIqTypes.BATTERY,
+            native_unit_of_measurement="PERCENT",
+            native_value=battery,
+            device_class="BATTERY",
         )
