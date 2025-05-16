@@ -34,8 +34,8 @@ class GarnetBluetoothDeviceData(BluetoothData):
         if MFR_ID not in data.manufacturer_data:
             return
         manufacturer_data = data.manufacturer_data
-        data = manufacturer_data[MFR_ID]
-        msg_length = len(data)
+        data_bytes = manufacturer_data[MFR_ID]
+        msg_length = len(data_bytes)
         if msg_length != 14:
             return
 
@@ -50,7 +50,7 @@ class GarnetBluetoothDeviceData(BluetoothData):
         self.set_device_type(self.model)
         self.set_device_manufacturer(self.manufacturer)
 
-        self._process_update(data)
+        self._process_update(data_bytes)
 
     # 0 = Fresh
     # 1 = Black
