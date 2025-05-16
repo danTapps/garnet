@@ -1,6 +1,4 @@
 {
-  "domain": "garnet",
-  "name": "Garnet 709-BT",
   "bluetooth": [
     {
       "manufacturer_id": 305
@@ -12,8 +10,10 @@
   "config_flow": true,
   "dependencies": ["bluetooth_adapters"],
   "documentation": "https://github.com/danTapps/garnet",
+  "domain": "garnet",
   "iot_class": "local_push",
   "integration_type": "device",
   "loggers": ["bleak","garnet"],
+  "name": "Garnet 709-BT",
   "version": "1.0.0"
 }
