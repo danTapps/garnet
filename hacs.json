@@ -1,6 +1,5 @@
 {
-  "name": "Garnet SeeLevel ||",
+  "name": "Garnet SeeLevel II",
   "render_readme": true,
-  "zip_release": true,
-  "filename": "garnet.zip"
+  "zip_release": false
 }
