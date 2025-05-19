@@ -59,7 +59,7 @@ class GarnetBluetoothDeviceData(BluetoothData):
             data_bytes = manufacturer_data[MFR_ID_BTP7]
             msg_length = len(data_bytes)
             if msg_length == 14:
-                self._process_update_btp7(data)
+                self._process_update_btp7(data_bytes)
 
         self.set_title(
             f"{self.manufacturer} {self.model} {short_address(self.address)}"
