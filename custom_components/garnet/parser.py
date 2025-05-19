@@ -9,12 +9,9 @@ from bluetooth_data_tools import short_address
 from bluetooth_sensor_state_data import BluetoothData  # type: ignore  # noqa: PGH003
 from home_assistant_bluetooth import BluetoothServiceInfo
 
-from .const import GarnetTypes
+from .const import GarnetTypes, MFR_ID_BTP3, MFR_ID_BTP7
 
 _LOGGER = logging.getLogger(__name__)
-
-MFR_ID = 305
-
 
 class GarnetBluetoothDeviceData(BluetoothData):
     """Date update for Garnet Bluetooth devices."""
@@ -28,18 +25,41 @@ class GarnetBluetoothDeviceData(BluetoothData):
         self.device_id = None
         super().__init__()
 
-    def _start_update(self, data: BluetoothServiceInfo) -> None:
-        """Update from BLE advertisement data."""
-        _LOGGER.debug("Parsing Garnet BLE advertisement data: %s", data)
-        if MFR_ID not in data.manufacturer_data:
-            return
+    def _parse_btp_3(data: BluetoothServiceInfo) -> None:
         manufacturer_data = data.manufacturer_data
-        data_bytes = manufacturer_data[MFR_ID]
+        data_bytes = manufacturer_data[MFR_ID_BTP3]
         msg_length = len(data_bytes)
         if msg_length != 14:
             return
 
+    def _parse_btp_7(data: BluetoothServiceInfo) -> None:
+        manufacturer_data = data.manufacturer_data
+        data_bytes = manufacturer_data[MFR_ID_BTP7]
+        msg_length = len(data_bytes)
+        if msg_length != 14:
+            return
+
+    def _start_update(self, data: BluetoothServiceInfo) -> None:
+        """Update from BLE advertisement data."""
+        _LOGGER.debug("Parsing Garnet BLE advertisement data: %s", data)
+        
         self.address = data.address
+
+        if MFR_ID_BTP3 in data.manufacturer_data:
+            self.model = "709-BTP3"
+            manufacturer_data = data.manufacturer_data
+            data_bytes = manufacturer_data[MFR_ID_BTP3]
+            msg_length = len(data_bytes)
+            if msg_length == 14:
+                self._process_update_btp3(data_bytes)
+
+        if MFR_ID_BTP7 in data.manufacturer_data:
+            self.model = "709-BTP7"
+            manufacturer_data = data.manufacturer_data
+            data_bytes = manufacturer_data[MFR_ID_BTP7]
+            msg_length = len(data_bytes)
+            if msg_length == 14:
+                self._process_update_btp7(data)
 
         self.set_title(
             f"{self.manufacturer} {self.model} {short_address(self.address)}"
@@ -50,7 +70,7 @@ class GarnetBluetoothDeviceData(BluetoothData):
         self.set_device_type(self.model)
         self.set_device_manufacturer(self.manufacturer)
 
-        self._process_update(data_bytes)
+        return
 
     # 0 = Fresh
     # 1 = Black
@@ -99,9 +119,9 @@ class GarnetBluetoothDeviceData(BluetoothData):
 
         return f"unknown_{sensor_type}"
 
-    def _process_update(self, data: bytes) -> None:
+    def _process_update_btp3(self, data: bytes) -> None:
         """Update from BLE advertisement data."""
-        _LOGGER.debug("Got data %s len %d", format(data), len(data))
+        _LOGGER.debug("Got btp3 data %s len %d", format(data), len(data))
         (coach_id, sensor_type, sensor_value, sensor_volume, sensor_total, alarm) = (
             unpack("@3sc3s3s3sc", data)
         )
@@ -149,4 +169,83 @@ class GarnetBluetoothDeviceData(BluetoothData):
             native_unit_of_measurement=sensor_measurement_unit,
             native_value=sensor_value if sensor_available is True else None,
             device_class=sensor_device_class,
+        )
+
+    def _process_update_btp7(self, data: bytes) -> None:
+        """Update from BLE advertisement data."""
+        _LOGGER.debug("Got btp7 data %s len %d", format(data), len(data))
+
+        (coach_id, fresh_1, grey_1, black_1, 
+        unk_1,
+        unk_2,
+        unk_3,
+        unk_4,
+        unk_5,
+        voltage,
+        unk_6,
+        unk_7) = (
+            unpack("<HxBBBBBBBBBBB", data)
+        )
+
+#        coach_id = int.from_bytes(coach_id, byteorder="little")
+#        sensor_type = int.from_bytes(sensor_type, byteorder="little")
+#        sensor_value = sensor_value.decode("utf-8")
+#        sensor_measurement_unit = "%"
+#        sensor_available = True
+
+        _LOGGER.debug(
+            "Got coach_id %d fresh1 %d, grey1 %d, black1 %d, voltage %d",
+            coach_id,
+            fresh_1, 
+            grey_1, 
+            black_1,
+            voltage, 
+        )
+
+        self.update_sensor(
+            key=GarnetTypes.GREY_TANK,
+            native_unit_of_measurement="%",
+            native_value=grey_1 if grey_1 != 110 else None,
+        )
+        
+#        self.update_sensor(
+#            key=GarnetTypes.GREY_TANK2,
+#            native_unit_of_measurement="%",
+#            native_value=grey_2 if grey_2 != 110 else None,
+#        )
+#        self.update_sensor(
+#            key=GarnetTypes.GREY_TANK3,
+#            native_unit_of_measurement="%",
+#            native_value=grey_3 if grey_3 != 110 else None,
+#        )
+
+        self.update_sensor(
+            key=GarnetTypes.FRESH_TANK,
+            native_unit_of_measurement="%",
+            native_value=fresh_1 if fresh_1 != 110 else None,
+        )
+
+#        self.update_sensor(
+#            key=GarnetTypes.FRESH_TANK2,
+#            native_unit_of_measurement="%",
+#            native_value=fresh_2 if fresh_2 != 110 else None,
+#        )
+
+        self.update_sensor(
+            key=GarnetTypes.BLACK_TANK,
+            native_unit_of_measurement="%",
+            native_value=black_1 if black_1 != 110 else None,
+        )
+
+#        self.update_sensor(
+#            key=GarnetTypes.BLACK_TANK2,
+#            native_unit_of_measurement="%",
+#            native_value=black_2 if black_2 != 110 else None,
+#        )
+
+        self.update_sensor(
+            key=GarnetTypes.BATTERY,
+            native_unit_of_measurement="V",
+            native_value=round(voltage / 10, 2),
+            device_class="VOLTAGE",
         )
