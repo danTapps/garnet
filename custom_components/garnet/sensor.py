@@ -34,13 +34,33 @@ SENSOR_DESCRIPTIONS = {
         device_class=None,
         native_unit_of_measurement="%",
     ),
+    GarnetTypes.FRESH_TANK2: SensorEntityDescription(
+        key=GarnetTypes.FRESH_TANK2,
+        device_class=None,
+        native_unit_of_measurement="%",
+    ),
     GarnetTypes.BLACK_TANK: SensorEntityDescription(
         key=GarnetTypes.BLACK_TANK,
         device_class=None,
         native_unit_of_measurement="%",
     ),
+    GarnetTypes.BLACK_TANK2: SensorEntityDescription(
+        key=GarnetTypes.BLACK_TANK2,
+        device_class=None,
+        native_unit_of_measurement="%",
+    ),
     GarnetTypes.GREY_TANK: SensorEntityDescription(
         key=GarnetTypes.GREY_TANK,
+        device_class=None,
+        native_unit_of_measurement="%",
+    ),
+    GarnetTypes.GREY_TANK2: SensorEntityDescription(
+        key=GarnetTypes.GREY_TANK2,
+        device_class=None,
+        native_unit_of_measurement="%",
+    ),
+    GarnetTypes.GREY_TANK3: SensorEntityDescription(
+        key=GarnetTypes.GREY_TANK3,
         device_class=None,
         native_unit_of_measurement="%",
     ),
