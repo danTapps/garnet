@@ -20,5 +20,5 @@ Copy `custom_components/garnet` into your Home Assistant `$HA_HOME/config` direc
 
 ### Supported devices:
 
-- Garnet SeeLevel II 709-BT
-
+- Garnet SeeLevel II 709-BTP3
+- Garnet SeeLevel II 709-BTP7 - *only supporting Gray Tank 1, Fresh Tank 1, Black Tank 1 and Voltage for now, in need of data samples with more tanks connected*
