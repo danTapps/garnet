@@ -9,9 +9,10 @@ from bluetooth_data_tools import short_address
 from bluetooth_sensor_state_data import BluetoothData  # type: ignore  # noqa: PGH003
 from home_assistant_bluetooth import BluetoothServiceInfo
 
-from .const import GarnetTypes, MFR_ID_BTP3, MFR_ID_BTP7
+from .const import MFR_ID_BTP3, MFR_ID_BTP7, GarnetTypes
 
 _LOGGER = logging.getLogger(__name__)
+
 
 class GarnetBluetoothDeviceData(BluetoothData):
     """Date update for Garnet Bluetooth devices."""
@@ -25,24 +26,10 @@ class GarnetBluetoothDeviceData(BluetoothData):
         self.device_id = None
         super().__init__()
 
-    def _parse_btp_3(data: BluetoothServiceInfo) -> None:
-        manufacturer_data = data.manufacturer_data
-        data_bytes = manufacturer_data[MFR_ID_BTP3]
-        msg_length = len(data_bytes)
-        if msg_length != 14:
-            return
-
-    def _parse_btp_7(data: BluetoothServiceInfo) -> None:
-        manufacturer_data = data.manufacturer_data
-        data_bytes = manufacturer_data[MFR_ID_BTP7]
-        msg_length = len(data_bytes)
-        if msg_length != 14:
-            return
-
     def _start_update(self, data: BluetoothServiceInfo) -> None:
         """Update from BLE advertisement data."""
         _LOGGER.debug("Parsing Garnet BLE advertisement data: %s", data)
-        
+
         self.address = data.address
 
         if MFR_ID_BTP3 in data.manufacturer_data:
@@ -69,8 +56,6 @@ class GarnetBluetoothDeviceData(BluetoothData):
         )
         self.set_device_type(self.model)
         self.set_device_manufacturer(self.manufacturer)
-
-        return
 
     # 0 = Fresh
     # 1 = Black
@@ -175,73 +160,79 @@ class GarnetBluetoothDeviceData(BluetoothData):
         """Update from BLE advertisement data."""
         _LOGGER.debug("Got btp7 data %s len %d", format(data), len(data))
 
-        (coach_id, fresh_1, grey_1, black_1, 
-        unk_1,
-        unk_2,
-        unk_3,
-        unk_4,
-        unk_5,
-        voltage,
-        unk_6,
-        unk_7) = (
-            unpack("<HxBBBBBBBBBBB", data)
-        )
+        (
+            coach_id,
+            fresh_1,
+            grey_1,
+            black_1,
+            fresh_2,
+            grey_2,
+            black_2,
+            unk_4,
+            unk_5,
+            voltage,
+            unk_6,
+            unk_7,
+        ) = unpack("<HxBBBBBBBBBBB", data)
 
-#        coach_id = int.from_bytes(coach_id, byteorder="little")
-#        sensor_type = int.from_bytes(sensor_type, byteorder="little")
-#        sensor_value = sensor_value.decode("utf-8")
-#        sensor_measurement_unit = "%"
-#        sensor_available = True
+        #        coach_id = int.from_bytes(coach_id, byteorder="little")
+        #        sensor_type = int.from_bytes(sensor_type, byteorder="little")
+        #        sensor_value = sensor_value.decode("utf-8")
+        #        sensor_measurement_unit = "%"
+        #        sensor_available = True
 
         _LOGGER.debug(
-            "Got coach_id %d fresh1 %d, grey1 %d, black1 %d, voltage %d",
+            "Got coach_id %d fresh1 %d, grey1 %d, black1 %d, fresh2 %d, grey2 %d, black2 %d, voltage %d",
             coach_id,
-            fresh_1, 
-            grey_1, 
+            fresh_1,
+            grey_1,
             black_1,
-            voltage, 
+            fresh_2,
+            grey_2,
+            black_2,
+            voltage,
         )
 
         self.update_sensor(
             key=GarnetTypes.GREY_TANK,
             native_unit_of_measurement="%",
-            native_value=grey_1 if grey_1 != 110 else None,
+            native_value=grey_1 if (grey_1 not in {110, 102}) else None,
         )
-        
-#        self.update_sensor(
-#            key=GarnetTypes.GREY_TANK2,
-#            native_unit_of_measurement="%",
-#            native_value=grey_2 if grey_2 != 110 else None,
-#        )
-#        self.update_sensor(
-#            key=GarnetTypes.GREY_TANK3,
-#            native_unit_of_measurement="%",
-#            native_value=grey_3 if grey_3 != 110 else None,
-#        )
+
+        self.update_sensor(
+            key=GarnetTypes.GREY_TANK2,
+            native_unit_of_measurement="%",
+            native_value=grey_2 if (grey_2 not in {110, 102}) else None,
+        )
+        #        self.update_sensor(
+        #            key=GarnetTypes.GREY_TANK3,
+        #            native_unit_of_measurement="%",
+        #            native_value=grey_3 if (grey_2 not in {110, 102}) else None,
+        #        )
 
         self.update_sensor(
             key=GarnetTypes.FRESH_TANK,
             native_unit_of_measurement="%",
-            native_value=fresh_1 if fresh_1 != 110 else None,
+            native_value=fresh_1 if (fresh_1 not in {110, 102}) else None,
         )
 
-#        self.update_sensor(
-#            key=GarnetTypes.FRESH_TANK2,
-#            native_unit_of_measurement="%",
-#            native_value=fresh_2 if fresh_2 != 110 else None,
-#        )
+        self.update_sensor(
+            key=GarnetTypes.FRESH_TANK2,
+            native_unit_of_measurement="%",
+            native_value=fresh_2 if (fresh_2 not in {110, 102}) else None,
+        )
 
         self.update_sensor(
             key=GarnetTypes.BLACK_TANK,
             native_unit_of_measurement="%",
-            native_value=black_1 if black_1 != 110 else None,
+            native_value=black_1 if (black_1 not in {110, 102}) else None,
         )
 
-#        self.update_sensor(
-#            key=GarnetTypes.BLACK_TANK2,
-#            native_unit_of_measurement="%",
-#            native_value=black_2 if black_2 != 110 else None,
-#        )
+        self.update_sensor(
+            key=GarnetTypes.BLACK_TANK2,
+            native_unit_of_measurement="%",
+            native_value=black_2 if (black_2 not in {110, 102}) else None,
+        )
 
         self.update_sensor(
             key=GarnetTypes.BATTERY,
