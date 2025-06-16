@@ -1,5 +1,5 @@
 # garnet
-[![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg)](https://github.com/hacs/integration)
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
 [![Validate with hassfest](https://github.com/danTapps/garnet/actions/workflows/hassfest-validate.yml/badge.svg)](https://github.com/danTapps/garnet/actions/workflows/hassfest-validate.yml)
 [![HACS Action](https://github.com/danTapps/garnet/actions/workflows/hacs-validate.yml/badge.svg)](https://github.com/danTapps/garnet/actions/workflows/hacs-validate.yml)
 
