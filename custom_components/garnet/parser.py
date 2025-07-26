@@ -32,7 +32,13 @@ class GarnetBluetoothDeviceData(BluetoothData):
 
         self.address = data.address
 
+        hex_manufacturer_data = {
+            manufacturer_id: value.hex()
+            for manufacturer_id, value in data.manufacturer_data.items()
+        }
+
         if MFR_ID_BTP3 in data.manufacturer_data:
+            _LOGGER.debug("Raw BTP3 Manufacturer Data %s", hex_manufacturer_data)
             self.model = "709-BTP3"
             manufacturer_data = data.manufacturer_data
             data_bytes = manufacturer_data[MFR_ID_BTP3]
@@ -41,6 +47,7 @@ class GarnetBluetoothDeviceData(BluetoothData):
                 self._process_update_btp3(data_bytes)
 
         if MFR_ID_BTP7 in data.manufacturer_data:
+            _LOGGER.debug("Raw BTP7 Manufacturer Data %s", hex_manufacturer_data)
             self.model = "709-BTP7"
             manufacturer_data = data.manufacturer_data
             data_bytes = manufacturer_data[MFR_ID_BTP7]
