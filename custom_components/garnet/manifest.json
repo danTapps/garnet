@@ -21,8 +21,7 @@
   "iot_class": "local_push",
   "issue_tracker": "https://github.com/danTapps/garnet/issues",
   "loggers": [
-    "bleak",
     "garnet"
   ],
-  "version": "1.2.1"
+  "version": "1.2.2"
 }
