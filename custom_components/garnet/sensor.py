@@ -132,7 +132,6 @@ SENSOR_DESCRIPTIONS = {
 
 def sensor_update_to_bluetooth_data_update(sensor_update) -> PassiveBluetoothDataUpdate:
     """Convert a sensor update to a bluetooth data update."""
-    _LOGGER.debug(sensor_update)
     return PassiveBluetoothDataUpdate(
         devices={
             device_id: sensor_device_info_to_hass_device_info(device_info)
