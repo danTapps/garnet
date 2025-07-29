@@ -113,7 +113,6 @@ class GarnetBluetoothDeviceData(BluetoothData):
 
     def _process_update_btp3(self, data: bytes) -> None:
         """Update from BLE advertisement data."""
-        _LOGGER.debug("Got btp3 data %s len %d", format(data), len(data))
         (coach_id, sensor_type, sensor_value, sensor_volume, sensor_total, alarm) = (
             unpack("@3sc3s3s3sc", data)
         )
@@ -165,7 +164,6 @@ class GarnetBluetoothDeviceData(BluetoothData):
 
     def _process_update_btp7(self, data: bytes) -> None:
         """Update from BLE advertisement data."""
-        _LOGGER.debug("Got btp7 data %s len %d", format(data), len(data))
 
         (
             coach_id,
@@ -176,7 +174,7 @@ class GarnetBluetoothDeviceData(BluetoothData):
             grey_2,
             black_2,
             unk_4,
-            unk_5,
+            lpg_1,
             voltage,
             unk_6,
             unk_7,
@@ -189,7 +187,7 @@ class GarnetBluetoothDeviceData(BluetoothData):
         #        sensor_available = True
 
         _LOGGER.debug(
-            "Got coach_id %d fresh1 %d, grey1 %d, black1 %d, fresh2 %d, grey2 %d, black2 %d, voltage %d",
+            "Got coach_id %d fresh1 %d, grey1 %d, black1 %d, fresh2 %d, grey2 %d, black2 %d, voltage %d, lpg1 %d",
             coach_id,
             fresh_1,
             grey_1,
@@ -198,6 +196,7 @@ class GarnetBluetoothDeviceData(BluetoothData):
             grey_2,
             black_2,
             voltage,
+            lpg_1,
         )
 
         self.update_sensor(
@@ -247,3 +246,10 @@ class GarnetBluetoothDeviceData(BluetoothData):
             native_value=round(voltage / 10, 2),
             device_class="VOLTAGE",
         )
+
+        self.update_sensor(
+            key=GarnetTypes.LPG_TANK,
+            native_unit_of_measurement="%",
+            native_value=lpg_1 if (lpg_1 not in {110, 102}) else None,
+        )
+
