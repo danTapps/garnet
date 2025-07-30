@@ -199,46 +199,52 @@ class GarnetBluetoothDeviceData(BluetoothData):
             lpg_1,
         )
 
-        self.update_sensor(
-            key=GarnetTypes.GREY_TANK,
-            native_unit_of_measurement="%",
-            native_value=grey_1 if (grey_1 not in {110, 102}) else None,
-        )
+        if grey_1 != 110:
+           self.update_sensor(
+               key=GarnetTypes.GREY_TANK,
+               native_unit_of_measurement="%",
+               native_value=grey_1 if (grey_1 not in {110, 102}) else None,
+           )
 
-        self.update_sensor(
-            key=GarnetTypes.GREY_TANK2,
-            native_unit_of_measurement="%",
-            native_value=grey_2 if (grey_2 not in {110, 102}) else None,
-        )
+        if grey_2 != 110:
+           self.update_sensor(
+               key=GarnetTypes.GREY_TANK2,
+               native_unit_of_measurement="%",
+               native_value=grey_2 if (grey_2 not in {110, 102}) else None,
+           )
         #        self.update_sensor(
         #            key=GarnetTypes.GREY_TANK3,
         #            native_unit_of_measurement="%",
         #            native_value=grey_3 if (grey_2 not in {110, 102}) else None,
         #        )
 
-        self.update_sensor(
-            key=GarnetTypes.FRESH_TANK,
-            native_unit_of_measurement="%",
-            native_value=fresh_1 if (fresh_1 not in {110, 102}) else None,
-        )
+        if fresh_1 != 110:
+           self.update_sensor(
+               key=GarnetTypes.FRESH_TANK,
+               native_unit_of_measurement="%",
+               native_value=fresh_1 if (fresh_1 not in {110, 102}) else None,
+           )
 
-        self.update_sensor(
-            key=GarnetTypes.FRESH_TANK2,
-            native_unit_of_measurement="%",
-            native_value=fresh_2 if (fresh_2 not in {110, 102}) else None,
-        )
+        if fresh_2 != 110:
+           self.update_sensor(
+               key=GarnetTypes.FRESH_TANK2,
+               native_unit_of_measurement="%",
+               native_value=fresh_2 if (fresh_2 not in {110, 102}) else None,
+           )
 
-        self.update_sensor(
-            key=GarnetTypes.BLACK_TANK,
-            native_unit_of_measurement="%",
-            native_value=black_1 if (black_1 not in {110, 102}) else None,
-        )
+        if black_1 != 110:
+           self.update_sensor(
+               key=GarnetTypes.BLACK_TANK,
+               native_unit_of_measurement="%",
+               native_value=black_1 if (black_1 not in {110, 102}) else None,
+           )
 
-        self.update_sensor(
-            key=GarnetTypes.BLACK_TANK2,
-            native_unit_of_measurement="%",
-            native_value=black_2 if (black_2 not in {110, 102}) else None,
-        )
+        if black_2 != 110:
+           self.update_sensor(
+               key=GarnetTypes.BLACK_TANK2,
+               native_unit_of_measurement="%",
+               native_value=black_2 if (black_2 not in {110, 102}) else None,
+           )
 
         self.update_sensor(
             key=GarnetTypes.BATTERY,
@@ -247,9 +253,10 @@ class GarnetBluetoothDeviceData(BluetoothData):
             device_class="VOLTAGE",
         )
 
-        self.update_sensor(
-            key=GarnetTypes.LPG_TANK,
-            native_unit_of_measurement="%",
-            native_value=lpg_1 if (lpg_1 not in {110, 102}) else None,
-        )
+	if lpg_1 != 110:
+           self.update_sensor(
+               key=GarnetTypes.LPG_TANK,
+               native_unit_of_measurement="%",
+               native_value=lpg_1 if (lpg_1 not in {110, 102}) else None,
+           )
 
