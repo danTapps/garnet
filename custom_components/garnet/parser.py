@@ -253,7 +253,7 @@ class GarnetBluetoothDeviceData(BluetoothData):
             device_class="VOLTAGE",
         )
 
-	if lpg_1 != 110:
+        if lpg_1 != 110:
            self.update_sensor(
                key=GarnetTypes.LPG_TANK,
                native_unit_of_measurement="%",
